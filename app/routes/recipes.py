@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.models import Recipe, RecipeIngredient
 from app.schemas.schemas import RecipeCreate
 from sqlalchemy.orm import joinedload
+from math import ceil
+from app.models.models import Ingredient
 
 router = APIRouter()
 
-# Dependency DB
+# Dependency DBs
 def get_db():
     db = SessionLocal()
     try:
@@ -117,45 +119,83 @@ def get_recipe_by_id(recipe_id: int, db: Session = Depends(get_db)):
         "ingredients": ingredients_list
     }
     
-@router.put("/recipes/{recipe_id}")
-def update_recipe(recipe_id: int, recipe: RecipeCreate, db: Session = Depends(get_db)):
 
-    # 🔍 Buscar receta
-    db_recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+@router.get("/recipes/{recipe_id}/cost")
+def calculate_recipe_cost(
+    recipe_id: int,
+    servings: int = Query(None),
+    margin: float = Query(0.3),  # 👈 30% por defecto
+    db: Session = Depends(get_db)
+):
 
-    if not db_recipe:
+    recipe = db.query(Recipe).options(
+        joinedload(Recipe.ingredients)
+        .joinedload(RecipeIngredient.ingredient)
+        .joinedload(Ingredient.packages)
+    ).filter(Recipe.id == recipe_id).first()
+
+    if not recipe:
         raise HTTPException(status_code=404, detail="Receta no encontrada")
 
-    # 🔥 VALIDACIÓN DE DUPLICADOS
-    ids = [i.ingredient_id for i in recipe.ingredients]
-    if len(ids) != len(set(ids)):
-        raise HTTPException(status_code=400, detail="Ingredientes duplicados")
+    target_servings = servings if servings else recipe.servings
 
-    try:
-        # ✏️ Actualizar campos (puedes quitar name si quieres bloquearlo)
-        db_recipe.name = recipe.name
-        db_recipe.description = recipe.description
-        db_recipe.servings = recipe.servings
+    if target_servings <= 0:
+        raise HTTPException(status_code=400, detail="Porciones inválidas")
 
-        # 🧹 Borrar ingredientes actuales
-        db.query(RecipeIngredient).filter(
-            RecipeIngredient.recipe_id == recipe_id
-        ).delete()
+    if margin < 0:
+        raise HTTPException(status_code=400, detail="Margen inválido")
 
-        # ➕ Insertar nuevos ingredientes
-        for ing in recipe.ingredients:
-            new_ing = RecipeIngredient(
-                recipe_id=recipe_id,
-                ingredient_id=ing.ingredient_id,
-                quantity=ing.quantity
+    factor = target_servings / recipe.servings
+
+    total_cost = 0
+    ingredients_result = []
+
+    for ri in recipe.ingredients:
+
+        ingredient = ri.ingredient
+        package = ingredient.packages[0] if ingredient.packages else None
+
+        if not package:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ingrediente {ingredient.name} no tiene paquete definido"
             )
-            db.add(new_ing)
 
-        # 💾 Guardar todo
-        db.commit()
+        scaled_quantity = float(ri.quantity) * factor
+        package_quantity = float(package.package_quantity)
+        package_cost = float(package.package_cost)
 
-        return {"message": "Receta actualizada"}
+        packages_needed = ceil(scaled_quantity / package_quantity)
+        cost = packages_needed * package_cost
 
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        total_cost += cost
+
+        ingredients_result.append({
+            "name": ingredient.name,
+            "scaled_quantity": scaled_quantity,
+            "unit": ingredient.base_unit,
+            "packages_needed": packages_needed,
+            "cost": cost
+        })
+
+    # 🔥 COSTOS
+    cost_per_serving = total_cost / target_servings
+
+    # 🔥 PRECIO DE VENTA
+    total_price = total_cost * (1 + margin)
+    price_per_serving = total_price / target_servings
+
+    return {
+        "recipe": recipe.name,
+        "target_servings": target_servings,
+
+        "total_cost": total_cost,
+        "cost_per_serving": cost_per_serving,
+
+        "margin": margin,
+
+        "total_price": total_price,
+        "price_per_serving": price_per_serving,
+
+        "ingredients": ingredients_result
+    }

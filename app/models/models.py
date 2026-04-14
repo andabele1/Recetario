@@ -8,6 +8,7 @@ class Ingredient(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     base_unit = Column(String, nullable=False)
+    packages = relationship("IngredientPackage", back_populates="ingredient")
 
 
 class IngredientPackage(Base):
@@ -18,8 +19,7 @@ class IngredientPackage(Base):
     package_quantity = Column(Numeric, nullable=False)
     package_cost = Column(Numeric, nullable=False)
 
-    ingredient = relationship("Ingredient")
-
+    ingredient = relationship("Ingredient", back_populates="packages")
 
 class Recipe(Base):
     __tablename__ = "recipes"
