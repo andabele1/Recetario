@@ -1,1 +1,85 @@
+# ==========================================
+# ENTORNOS VIRTUALES (Lo más importante)
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+bin/
+lib/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.installed.cfg
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+
+# ==========================================
+# CACHÉ Y COMPILACIÓN
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+build/
+develop-eggs/
+*.egg-info/
+.installed.cfg
+.eggs/
+
+# ==========================================
+# ARCHIVOS DE CONFIGURACIÓN Y SECRETOS
+# (¡NUNCA subas estos a GitHub!)
+# ==========================================
+.env
 .venv
+*.env
+*.secret
+secrets.json
+auth.token
+config.local.ini
+
+# ==========================================
+# CONFIGURACIÓN DE EDITORES (VS Code, PyCharm)
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# ==========================================
+# ARCHIVOS DEL SISTEMA OPERATIVO
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# LOGS Y BASES DE DATOS LOCALES
+# ==========================================
+*.log
+local_db.sqlite3
+*.db
+instance/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
