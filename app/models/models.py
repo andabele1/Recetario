@@ -19,7 +19,8 @@ class IngredientPackage(Base):
     package_quantity = Column(Numeric, nullable=False)
     package_cost = Column(Numeric, nullable=False)
 
-    ingredient = relationship("Ingredient", back_populates="packages")
+    ingredient = relationship("Ingredient")
+
 
 class Recipe(Base):
     __tablename__ = "recipes"

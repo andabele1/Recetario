@@ -59,9 +59,7 @@ def create_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
 
 @router.get("/recipes")
 def get_recipes_full(db: Session = Depends(get_db)):
-    recipes = db.query(Recipe).options(
-        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient)
-    ).all()
+    recipes = db.query(Recipe).all()
 
     result = []
 
@@ -86,39 +84,32 @@ def get_recipes_full(db: Session = Depends(get_db)):
 
     return result
 
-from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
-
 @router.get("/recipes/{recipe_id}")
-def get_recipe_by_id(recipe_id: int, db: Session = Depends(get_db)):
+def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
 
     recipe = db.query(Recipe).options(
-        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient)
+        joinedload(Recipe.ingredients)
+        .joinedload(RecipeIngredient.ingredient)
     ).filter(Recipe.id == recipe_id).first()
 
-    # ❌ Si no existe
     if not recipe:
         raise HTTPException(status_code=404, detail="Receta no encontrada")
-
-    # ✅ Construir respuesta
-    ingredients_list = []
-
-    for ri in recipe.ingredients:
-        ingredients_list.append({
-            "ingredient_id": ri.ingredient_id,
-            "name": ri.ingredient.name,
-            "quantity": float(ri.quantity),
-            "unit": ri.ingredient.base_units
-        })
 
     return {
         "id": recipe.id,
         "name": recipe.name,
         "description": recipe.description,
         "servings": recipe.servings,
-        "ingredients": ingredients_list
+        "ingredients": [
+            {
+                "ingredient_id": ri.ingredient_id,
+                "name": ri.ingredient.name,
+                "quantity": ri.quantity,
+                "unit": ri.ingredient.base_unit
+            }
+            for ri in recipe.ingredients
+        ]
     }
-    
 
 @router.get("/recipes/{recipe_id}/cost")
 def calculate_recipe_cost(

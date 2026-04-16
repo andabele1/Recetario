@@ -21,15 +21,19 @@ class RecipeCreate(BaseModel):
 # SCHEMAS PARA INGREDSIENTES
 # ------------------------     
 
-class IngredientCreate(BaseModel):
+from pydantic import BaseModel
+
+class IngredientBase(BaseModel):
     name: str
     base_unit: str
+    available_quantity: float
+    total_cost: float
 
+class IngredientCreate(IngredientBase):
+    pass
 
-class IngredientResponse(BaseModel):
+class IngredientResponse(IngredientBase):
     id: int
-    name: str
-    base_unit: str
 
     class Config:
         from_attributes = True

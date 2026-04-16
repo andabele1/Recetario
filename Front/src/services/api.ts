@@ -1,0 +1,65 @@
+const API_URL = "http://127.0.0.1:8000";
+
+import { type Ingredient, type Recipe, type RecipeCost } from "../types/types";
+
+export const getRecipes = async (): Promise<Recipe[]> => {
+  const res = await fetch(`${API_URL}/recipes`);
+  return res.json();
+};
+
+export const getRecipeById = async (id: number): Promise<Recipe> => {
+  const res = await fetch(`${API_URL}/recipes/${id}`);
+  return res.json();
+};
+
+export const getRecipeCost = async (
+  id: number,
+  servings: number,
+  margin: number
+): Promise<RecipeCost> => {
+  const res = await fetch(
+    `${API_URL}/recipes/${id}/cost?servings=${servings}&margin=${margin}`
+  );
+  return res.json();
+};
+
+export const createRecipe = async (data: any) => {
+  const res = await fetch(`${API_URL}/recipes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const getIngredients = async (): Promise<Ingredient[]> => {
+  const res = await fetch(`${API_URL}/ingredients/`);
+  return res.json();
+};
+
+// -----------------ARREGLAR ESTO-----------------
+
+export const createIngredient = async (data: {
+  name: string;
+  base_unit: string;
+  available_quantity: number;
+  total_cost: number;
+}): Promise<Ingredient> => {
+  const res = await fetch(`${API_URL}/ingredients/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
+// ----------------------------------------------
+
+export const deleteIngredient = async (id: number) => {
+  await fetch(`${API_URL}/ingredients/${id}`, {
+    method: "DELETE",
+  });
+};
