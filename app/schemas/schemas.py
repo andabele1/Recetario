@@ -12,9 +12,31 @@ class RecipeIngredientCreate(BaseModel):
 
 class RecipeCreate(BaseModel):
     name: str
-    description: str
+    description: str | None = None
     servings: int
+    instructions: str
+    image_url: str | None = None
     ingredients: List[RecipeIngredientCreate]
+    
+class RecipeIngredientResponse(BaseModel):
+    ingredient_id: int
+    quantity: float
+
+    class Config:
+        from_attributes = True
+
+
+class RecipeResponse(BaseModel):
+    id: int
+    name: str
+    short_description: str
+    instructions: str
+    image_url: str
+    servings: int
+    ingredients: List[RecipeIngredientResponse]
+
+    class Config:
+        from_attributes = True
 
     
 # ------------------------

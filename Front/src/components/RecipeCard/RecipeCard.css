@@ -1,0 +1,38 @@
+.recipeCard {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.recipeCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+}
+
+.title {
+  padding: 12px 16px 4px;
+}
+
+.title h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.description {
+  padding: 0 16px 14px;
+}
+
+.description p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}

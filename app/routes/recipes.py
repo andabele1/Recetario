@@ -33,8 +33,9 @@ def create_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
         # Crear receta
         new_recipe = Recipe(
             name=recipe.name,
-            description=recipe.description,
-            servings=recipe.servings
+            servings=recipe.servings,
+            short_description=recipe.short_description,
+            image_url=recipe.image_url
         )
         db.add(new_recipe)
         db.flush()  # 👈 clave (no commit aún)
@@ -77,8 +78,9 @@ def get_recipes_full(db: Session = Depends(get_db)):
         result.append({
             "id": recipe.id,
             "name": recipe.name,
-            "description": recipe.description,
             "servings": recipe.servings,
+            "short_description": recipe.short_description,
+            "image_url": recipe.image_url,
             "ingredients": ingredients_list
         })
 
@@ -86,30 +88,59 @@ def get_recipes_full(db: Session = Depends(get_db)):
 
 @router.get("/recipes/{recipe_id}")
 def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
-
-    recipe = db.query(Recipe).options(
-        joinedload(Recipe.ingredients)
-        .joinedload(RecipeIngredient.ingredient)
-    ).filter(Recipe.id == recipe_id).first()
+    recipe = (
+        db.query(Recipe)
+        .options(
+            joinedload(Recipe.ingredients)
+            .joinedload(RecipeIngredient.ingredient)
+        )
+        .filter(Recipe.id == recipe_id)
+        .first()
+    )
 
     if not recipe:
         raise HTTPException(status_code=404, detail="Receta no encontrada")
 
-    return {
-        "id": recipe.id,
-        "name": recipe.name,
-        "description": recipe.description,
-        "servings": recipe.servings,
-        "ingredients": [
-            {
-                "ingredient_id": ri.ingredient_id,
-                "name": ri.ingredient.name,
-                "quantity": ri.quantity,
-                "unit": ri.ingredient.base_unit
-            }
-            for ri in recipe.ingredients
-        ]
-    }
+    return recipe
+    
+@router.put("/recipes/{recipe_id}")
+def update_recipe(recipe_id: int, data: RecipeCreate, db: Session = Depends(get_db)):
+
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Receta no encontrada")
+
+    # 🚫 validar duplicados
+    ids = [i.ingredient_id for i in data.ingredients]
+    if len(ids) != len(set(ids)):
+        raise HTTPException(status_code=400, detail="Ingredientes duplicados")
+
+    # 🔥 actualizar campos base
+    recipe.name = data.name
+    recipe.description = data.description
+    recipe.servings = data.servings
+    recipe.instructions = data.instructions
+    recipe.image_url = data.image_url
+
+    # 🔥 borrar ingredientes actuales
+    db.query(RecipeIngredient).filter(
+        RecipeIngredient.recipe_id == recipe_id
+    ).delete()
+
+    # 🔥 insertar nuevos
+    for ing in data.ingredients:
+        new_ing = RecipeIngredient(
+            recipe_id=recipe.id,
+            ingredient_id=ing.ingredient_id,
+            quantity=ing.quantity
+        )
+        db.add(new_ing)
+
+    db.commit()
+    db.refresh(recipe)
+
+    return recipe
 
 @router.get("/recipes/{recipe_id}/cost")
 def calculate_recipe_cost(

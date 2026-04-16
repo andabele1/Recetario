@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getIngredients, createRecipe } from "../../services/api";
-import { type Ingredient } from "../../types/types";
 import { useNavigate } from "react-router-dom";
+import { createRecipe, getIngredients } from "../../services/api";
+import { type Ingredient } from "../../types/types";
 
 interface SelectedIngredient {
   ingredient_id: number | "";

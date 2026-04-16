@@ -1,69 +1,230 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getRecipeById, getRecipeCost } from "../../services/api";
-import { type Recipe, type RecipeCost } from "../../types/types";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getIngredients,
+  getRecipeById,
+  getRecipeCost,
+  updateRecipe,
+} from "../../services/api";
+import "./recipesDetail.css";
 
 export default function RecipeDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [cost, setCost] = useState<RecipeCost | null>(null);
+  const [recipe, setRecipe] = useState<any>(null);
+  const [allIngredients, setAllIngredients] = useState<any[]>([]);
 
-  const [servings, setServings] = useState<number>(1);
-  const [margin, setMargin] = useState<number>(0.3);
+  const [editMode, setEditMode] = useState(false);
+  const [servings, setServings] = useState<string>("1");
+  const [costData, setCostData] = useState<any>(null);
+
+  const MARGIN = 0.4; // 🔥 margen fijo
 
   useEffect(() => {
     if (id) {
-      getRecipeById(Number(id)).then((data) => {
-        setRecipe(data);
-        setServings(data.servings);
-      });
+      getRecipeById(Number(id)).then(setRecipe);
+      getIngredients().then(setAllIngredients);
     }
   }, [id]);
 
-  const calculate = async () => {
-    if (!id) return;
-    const data = await getRecipeCost(Number(id), servings, margin);
-    setCost(data);
-  };
-
   if (!recipe) return <p>Cargando...</p>;
 
+  // 🔥 guardar cambios
+  const save = async () => {
+    await updateRecipe(recipe.id, {
+      name: recipe.name,
+      description: recipe.description,
+      servings: recipe.servings,
+      instructions: recipe.instructions,
+      image_url: recipe.image_url,
+      ingredients: recipe.ingredients.map((i: any) => ({
+        ingredient_id: i.ingredient.id,
+        quantity: i.quantity,
+      })),
+    });
+
+    setEditMode(false);
+  };
+
   return (
-    <div>
-      <h1>{recipe.name}</h1>
-      <p>{recipe.description}</p>
+    <div className="container">
+      <div className="card">
 
-      <h3>Ingredientes</h3>
-      {recipe.ingredients.map((ing, i) => (
-        <div key={i}>
-          {ing.name} - {ing.quantity} {ing.unit}
+        {/* BACK */}
+        <button className="back" onClick={() => navigate("/recipes")}>
+          ← Volver
+        </button>
+
+        {/* IMAGEN */}
+        <div
+          className="image"
+          style={{
+            backgroundImage: `url(${recipe.image_url ||
+              "https://images.unsplash.com/photo-1604908176997-4318c0a1a0e3"
+              })`,
+          }}
+        />
+
+        {/* HEADER */}
+        <div className="header">
+          {editMode ? (
+            <input
+              className="titleInput"
+              value={recipe.name}
+              onChange={(e) =>
+                setRecipe({ ...recipe, name: e.target.value })
+              }
+            />
+          ) : (
+            <h1 className="title">{recipe.name}</h1>
+          )}
+
+          {editMode ? (
+            <button className="editBtn" onClick={save}>
+              Guardar
+            </button>
+          ) : (
+            <button className="editBtn" onClick={() => setEditMode(true)}>
+              Editar
+            </button>
+          )}
         </div>
-      ))}
 
-      <hr />
+        {/* CONTENIDO */}
+        <div className="content">
 
-      <input
-        type="number"
-        value={servings}
-        onChange={(e) => setServings(Number(e.target.value))}
-      />
+          {/* INGREDIENTES */}
+          <div className="section">
+            <h3>Ingredientes</h3>
 
-      <input
-        type="number"
-        step="0.1"
-        value={margin}
-        onChange={(e) => setMargin(Number(e.target.value))}
-      />
+            {editMode ? (
+              recipe.ingredients.map((ing: any, i: number) => (
+                <div key={i} className="row">
+                  <select
+                    value={ing.ingredient.id}
+                    onChange={(e) => {
+                      const copy = [...recipe.ingredients];
+                      const selected = allIngredients.find(
+                        (a) => a.id === Number(e.target.value)
+                      );
 
-      <button onClick={calculate}>Calcular</button>
+                      copy[i].ingredient = selected;
+                      setRecipe({ ...recipe, ingredients: copy });
+                    }}
+                  >
+                    {allIngredients.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
 
-      {cost && (
-        <div>
-          <p>Total costo: {cost.total_cost}</p>
-          <p>Precio total: {cost.total_price}</p>
+                  <input
+                    type="number"
+                    value={ing.quantity}
+                    onChange={(e) => {
+                      const copy = [...recipe.ingredients];
+                      copy[i].quantity = Number(e.target.value);
+                      setRecipe({ ...recipe, ingredients: copy });
+                    }}
+                  />
+                </div>
+              ))
+            ) : (
+              <ul>
+                {recipe.ingredients.map((ing: any, i: number) => (
+                  <li key={i}>
+                    {ing.ingredient?.name} - {ing.quantity}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* 🔥 COSTO DESDE BACK */}
+
+            <div className="costSection">
+              <h3>Porciones</h3>
+              <input
+                type="number"
+                min={1}
+                value={servings}
+                onChange={(e) => {
+                  const rawValue = e.target.value;
+                  const normalized = rawValue.replace(/^0+(?=\d)/, "");
+                  setServings(normalized);
+                }}
+                placeholder="Porciones"
+              />
+
+              <button
+                onClick={async () => {
+                  try {
+                    const servingsNumber = Number(servings);
+                    if (!servings || servingsNumber <= 0) {
+                      alert("Porciones inválidas");
+                      return;
+                    }
+
+                    const data = await getRecipeCost(
+                      recipe.id,
+                      servingsNumber,
+                      MARGIN // 🔥 fijo
+                    );
+
+                    console.log("COST DATA:", data);
+                    setCostData(data);
+                  } catch (err) {
+                    console.error(err);
+                    alert("Error al calcular");
+                  }
+                }}
+              >
+                Calcular
+              </button>
+            </div>
+
+            {/* 🔥 RESULTADO SEGURO */}
+            {costData && costData.total_cost !== undefined && (
+              <div className="costResult">
+                <p>
+                  Costo total: $
+                  {Number(costData.total_cost).toFixed(2)}
+                </p>
+
+                {costData.selling_price !== undefined && (
+                  <p>
+                    Precio sugerido: $
+                    {Number(costData.selling_price).toFixed(2)}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* INSTRUCCIONES */}
+          <div className="section">
+            <h3>Preparación</h3>
+
+            {editMode ? (
+              <textarea
+                className="instructionsInput"
+                value={recipe.instructions || ""}
+                onChange={(e) =>
+                  setRecipe({
+                    ...recipe,
+                    instructions: e.target.value,
+                  })
+                }
+              />
+            ) : (
+              <p className="instructions">
+                {recipe.instructions}
+              </p>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

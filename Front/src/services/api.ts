@@ -37,7 +37,22 @@ export const getIngredients = async (): Promise<Ingredient[]> => {
   return res.json();
 };
 
-// -----------------ARREGLAR ESTO-----------------
+export const updateRecipe = async (id: number, data: any) => {
+  const res = await fetch(`${API_URL}/recipes/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    console.error("ERROR BACK:", error); // 🔥 CLAVE
+    throw new Error("Error al actualizar receta");
+  }
+
+  return res.json();
+};
 
 export const createIngredient = async (data: {
   name: string;
@@ -56,7 +71,6 @@ export const createIngredient = async (data: {
   return res.json();
 };
 
-// ----------------------------------------------
 
 export const deleteIngredient = async (id: number) => {
   await fetch(`${API_URL}/ingredients/${id}`, {
