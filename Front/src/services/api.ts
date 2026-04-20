@@ -32,6 +32,16 @@ export const createRecipe = async (data: any) => {
   return res.json();
 };
 
+export const deleteRecipe = async (id: number) => {
+  const res = await fetch(`${API_URL}/recipes/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error("Error al eliminar receta");
+  }
+};
+
 export const getIngredients = async (): Promise<Ingredient[]> => {
   const res = await fetch(`${API_URL}/ingredients/`);
   return res.json();
@@ -96,6 +106,22 @@ export const updateIngredient = async (
   });
 
   if (!res.ok) throw new Error("Error al actualizar ingrediente");
+
+  return res.json();
+};
+
+export const uploadImage = async (file: File): Promise<{ url: string }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("http://127.0.0.1:8000/upload/", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Error subiendo imagen");
+  }
 
   return res.json();
 };

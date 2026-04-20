@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RecipeCard.css";
 
@@ -6,6 +7,7 @@ interface Props {
   name: string;
   short_description: string;
   image_url?: string;
+  onDelete?: () => void;
 }
 
 export default function RecipeCard({
@@ -13,8 +15,10 @@ export default function RecipeCard({
   name,
   short_description,
   image_url,
+  onDelete,
 }: Props) {
   const navigate = useNavigate();
+  const [showMenu, setShowMenu] = useState(false);
 
   const fallback =
     "https://images.unsplash.com/photo-1604908176997-4318c0a1a0e3";
@@ -37,6 +41,32 @@ export default function RecipeCard({
 
       <div className={"description"}>
         <p>{short_description}</p>
+      </div>
+
+      <div className="menu-container">
+        <button
+          className="menu-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMenu(!showMenu);
+          }}
+        >
+          ⋮
+        </button>
+        {showMenu && (
+          <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => {
+                if (window.confirm("¿Estás seguro de que quieres eliminar esta receta?")) {
+                  onDelete?.();
+                }
+                setShowMenu(false);
+              }}
+            >
+              Eliminar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

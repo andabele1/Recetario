@@ -5,6 +5,7 @@ import {
   getRecipeById,
   getRecipeCost,
   updateRecipe,
+  uploadImage,
 } from "../../services/api";
 import "./recipesDetail.css";
 
@@ -34,7 +35,7 @@ export default function RecipeDetail() {
   const save = async () => {
     await updateRecipe(recipe.id, {
       name: recipe.name,
-      description: recipe.description,
+      short_description: recipe.short_description,
       servings: recipe.servings,
       instructions: recipe.instructions,
       image_url: recipe.image_url,
@@ -61,6 +62,25 @@ export default function RecipeDetail() {
     });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+
+    try {
+      const res = await uploadImage(file);
+      console.log("IMAGE URL:", recipe.image_url);
+
+      setRecipe({
+        ...recipe,
+        image_url: `${res.url}`,
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Error subiendo imagen");
+    }
+  };
+
   return (
     <div className="container">
       <div className="card">
@@ -71,14 +91,22 @@ export default function RecipeDetail() {
         </button>
 
         {/* IMAGEN */}
-        <div
-          className="image"
-          style={{
-            backgroundImage: `url(${recipe.image_url ||
-              "https://img.freepik.com/foto-gratis/gradiente-gris-blanco-oscuro-vacio-abstracto-iluminacion-vineta-solida-negra-fondo-pared-piso-estudio-uso-como-telon-fondo-fondo-sala-blanca-vacia-espacio-texto-e-imagen_1258-71887.jpg?semt=ais_hybrid&w=740&q=80"
-              })`,
-          }}
-        />
+        {editMode && (
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
+        )}
+        {recipe.image_url && (
+          <div
+            className="image"
+            style={{
+              backgroundImage: `url(${recipe.image_url})`,
+            }}
+          />
+        )}
+
 
         {/* HEADER */}
         <div className="header">
@@ -104,6 +132,28 @@ export default function RecipeDetail() {
             </button>
           )}
         </div>
+
+        {/* DESCRIPCION CORTA */}
+        <div className="shortDescription">
+          {editMode ? (
+            <input
+              className="shortDescriptionInput"
+              placeholder="Descripción corta"
+              value={recipe.short_description || ""}
+              onChange={(e) =>
+                setRecipe({
+                  ...recipe,
+                  short_description: e.target.value
+                })
+              }
+            />
+          ) : (
+            <p className="shortDescriptionText">
+              {recipe.short_description || "Sin descripción"}
+            </p>
+          )}
+        </div>
+
 
         {/* CONTENIDO */}
         <div className="content">

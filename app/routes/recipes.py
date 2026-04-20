@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os
+import shutil
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.models import Recipe, RecipeIngredient
@@ -118,7 +120,7 @@ def update_recipe(recipe_id: int, data: RecipeCreate, db: Session = Depends(get_
 
     # 🔥 actualizar campos base
     recipe.name = data.name
-    recipe.description = data.description
+    recipe.short_description = data.short_description
     recipe.servings = data.servings
     recipe.instructions = data.instructions
     recipe.image_url = data.image_url
@@ -221,3 +223,15 @@ def calculate_recipe_cost(
 
         "ingredients": ingredients_result
     }
+    
+@router.delete("/recipes/{recipe_id}")
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Receta no encontrada")
+
+    db.delete(recipe)
+    db.commit()
+
+    return {"message": "Receta eliminada"}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RecipeCard from "../../components/RecipeCard/RecipeCard";
-import { getRecipes } from "../../services/api";
+import { deleteRecipe, getRecipes } from "../../services/api";
 import { type Recipe } from "../../types/types";
 import "./Recipes.css";
 
@@ -19,51 +19,72 @@ export default function Recipes() {
     setRecipes(data);
   };
 
+  // 🔍 filtro por nombre + ingredientes
   const filteredRecipes = recipes.filter((r) => {
-  const text = search.toLowerCase();
+    const text = search.toLowerCase();
 
-  const matchName = r.name.toLowerCase().includes(text);
+    const matchName = r.name.toLowerCase().includes(text);
 
-  const matchIngredients = r.ingredients?.some((ing) =>
-    ing.name?.toLowerCase().includes(text)
-  );
+    const matchIngredients = r.ingredients?.some((ing: any) =>
+      ing.ingredient?.name?.toLowerCase().includes(text)
+    );
 
-  return matchName || matchIngredients;
-});
+    return matchName || matchIngredients;
+  });
+
+  // 🔥 eliminar receta
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteRecipe(id);
+
+      // actualizar UI sin recargar
+      setRecipes((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Error al eliminar receta");
+    }
+  };
 
   return (
-    <div className={"container"}>
-      <div className={"header"}>
-        <h1 className={"title"}>RECETAS</h1>
+    <div className="container">
+      {/* HEADER */}
+      <div className="header">
+        <h1 className="title">RECETAS</h1>
 
         <button
-          className={"button"}
+          className="button"
           onClick={() => navigate("/ingredients")}
         >
           Ingredientes
         </button>
-
       </div>
 
-      <div className={"topBar"}>
+      {/* SEARCH */}
+      <div className="topBar">
         <input
           className="search"
-          placeholder="Buscar..."
+          placeholder="Buscar por nombre o ingrediente..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <div className={"grid"}>
+      {/* GRID */}
+      <div className="grid">
         {filteredRecipes.map((r) => (
-          <RecipeCard key={r.id} {...r} />
+          <RecipeCard
+            key={r.id}
+            {...r}
+            onDelete={() => handleDelete(r.id)} // 🔥 AQUÍ ESTÁ LA CLAVE
+          />
         ))}
 
+        {/* CARD CREAR */}
         <div
-          className={"addCard"}
+          className="addCard"
           onClick={() => navigate("/recipes/new")}
         >
-          <div className={"plus"}>+</div>
+          <div className="plus">+</div>
         </div>
       </div>
     </div>

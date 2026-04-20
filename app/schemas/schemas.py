@@ -1,3 +1,5 @@
+import string
+
 from pydantic import BaseModel
 from typing import List
 
@@ -16,6 +18,7 @@ class RecipeCreate(BaseModel):
     servings: int
     instructions: str
     image_url: str | None = None
+    short_description: str;
     ingredients: List[RecipeIngredientCreate]
     
 class RecipeIngredientResponse(BaseModel):

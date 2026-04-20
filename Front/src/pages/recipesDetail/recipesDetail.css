@@ -202,3 +202,15 @@
   border-radius: 8px;
   border: 1px solid #e5e7eb;
 }
+
+.shortDescription {
+  margin-top: 15px;
+}
+
+.shortDescriptionInput {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #e5e7eb;
+  outline: none;
+  padding: 6px;
+}
