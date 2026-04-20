@@ -47,6 +47,20 @@ export default function RecipeDetail() {
     setEditMode(false);
   };
 
+  const addIngredient = () => {
+    if (!allIngredients.length) return;
+
+    const newIngredient = {
+      ingredient: allIngredients[0], // default primero
+      quantity: 1,
+    };
+
+    setRecipe({
+      ...recipe,
+      ingredients: [...recipe.ingredients, newIngredient],
+    });
+  };
+
   return (
     <div className="container">
       <div className="card">
@@ -61,7 +75,7 @@ export default function RecipeDetail() {
           className="image"
           style={{
             backgroundImage: `url(${recipe.image_url ||
-              "https://images.unsplash.com/photo-1604908176997-4318c0a1a0e3"
+              "https://img.freepik.com/foto-gratis/gradiente-gris-blanco-oscuro-vacio-abstracto-iluminacion-vineta-solida-negra-fondo-pared-piso-estudio-uso-como-telon-fondo-fondo-sala-blanca-vacia-espacio-texto-e-imagen_1258-71887.jpg?semt=ais_hybrid&w=740&q=80"
               })`,
           }}
         />
@@ -99,38 +113,58 @@ export default function RecipeDetail() {
             <h3>Ingredientes</h3>
 
             {editMode ? (
-              recipe.ingredients.map((ing: any, i: number) => (
-                <div key={i} className="row">
-                  <select
-                    value={ing.ingredient.id}
-                    onChange={(e) => {
-                      const copy = [...recipe.ingredients];
-                      const selected = allIngredients.find(
-                        (a) => a.id === Number(e.target.value)
-                      );
+              <>
+                {recipe.ingredients.map((ing: any, i: number) => (
+                  <div key={i} className="row">
+                    <select
+                      value={ing.ingredient?.id}
+                      onChange={(e) => {
+                        const copy = [...recipe.ingredients];
+                        const selected = allIngredients.find(
+                          (a) => a.id === Number(e.target.value)
+                        );
 
-                      copy[i].ingredient = selected;
-                      setRecipe({ ...recipe, ingredients: copy });
-                    }}
-                  >
-                    {allIngredients.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
+                        copy[i].ingredient = selected;
+                        setRecipe({ ...recipe, ingredients: copy });
+                      }}
+                    >
+                      {allIngredients.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
 
-                  <input
-                    type="number"
-                    value={ing.quantity}
-                    onChange={(e) => {
-                      const copy = [...recipe.ingredients];
-                      copy[i].quantity = Number(e.target.value);
-                      setRecipe({ ...recipe, ingredients: copy });
-                    }}
-                  />
-                </div>
-              ))
+                    <input
+                      className="quantityInput"
+                      type="number"
+                      min={0}
+                      value={ing.quantity}
+                      onChange={(e) => {
+                        const copy = [...recipe.ingredients];
+                        copy[i].quantity = Number(e.target.value);
+                        setRecipe({ ...recipe, ingredients: copy });
+                      }}
+                    />
+
+                    <button
+                      className="deleteBtn"
+                      onClick={() => {
+                        const copy = recipe.ingredients.filter(
+                          (_: any, idx: number) => idx !== i
+                        );
+                        setRecipe({ ...recipe, ingredients: copy });
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+
+                <button className="addBtn" onClick={addIngredient}>
+                  + Agregar ingrediente
+                </button>
+              </>
             ) : (
               <ul>
                 {recipe.ingredients.map((ing: any, i: number) => (

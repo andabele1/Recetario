@@ -1,0 +1,61 @@
+.container {
+  background: #f9fafb;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.back {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #d1d5db;
+  padding: 8px;
+  text-align: center;
+}
+
+.table input {
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+}
+
+.addBtn {
+  background: #10b981;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.deleteBtnIngredient {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}

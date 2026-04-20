@@ -77,3 +77,25 @@ export const deleteIngredient = async (id: number) => {
     method: "DELETE",
   });
 };
+
+export const updateIngredient = async (
+  id: number,
+  data: {
+    name: string;
+    base_unit: string;
+    available_quantity: number;
+    total_cost: number;
+  }
+) => {
+  const res = await fetch(`${API_URL}/ingredients/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error("Error al actualizar ingrediente");
+
+  return res.json();
+};

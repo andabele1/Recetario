@@ -1,9 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import EditRecipe from "./pages/EditRecipe/EditRecipe";
+import Ingredients from "./pages/ingredents/ingredients";
 import RecipeForm from "./pages/recipeForm/recipesForm";
 import Recipes from "./pages/recipes/recipes";
 import RecipeDetail from "./pages/recipesDetail/recipesDetail";
-import Ingredients from "./pages/ingredents/ingredents";
-import EditRecipe from "./pages/EditRecipe/EditRecipe";
 
 function App() {
   return (

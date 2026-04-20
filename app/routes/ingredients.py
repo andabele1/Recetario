@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
-from app.models.models import Ingredient
+from app.models.models import Ingredient, IngredientPackage
 from app.schemas.schemas import IngredientCreate, IngredientResponse
 
 router = APIRouter(prefix="/ingredients", tags=["Ingredients"])
@@ -16,11 +16,28 @@ def get_db():
 @router.post("/")
 @router.post("/", response_model=IngredientResponse)
 def create_ingredient(data: IngredientCreate, db: Session = Depends(get_db)):
-    ingredient = Ingredient(**data.dict())
+
+    # 🔥 crear ingrediente
+    ingredient = Ingredient(
+        name=data.name,
+        base_unit=data.base_unit,
+        available_quantity=data.available_quantity,
+        total_cost=data.total_cost
+    )
 
     db.add(ingredient)
     db.commit()
     db.refresh(ingredient)
+
+    # 🔥 CREAR PACKAGE AUTOMÁTICO
+    package = IngredientPackage(
+        ingredient_id=ingredient.id,
+        package_quantity=data.available_quantity,
+        package_cost=data.total_cost
+    )
+
+    db.add(package)
+    db.commit()
 
     return ingredient
 
