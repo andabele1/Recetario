@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  createRecipe,
-  getIngredients,
-} from "../../services/api";
+import { createRecipe, getIngredients, uploadImage } from "../../services/api";
 import "./recipesForm.css";
 
 export default function RecipeCreate() {
@@ -81,20 +78,12 @@ export default function RecipeCreate() {
               const file = e.target.files?.[0];
               if (!file) return;
 
-              const formData = new FormData();
-              formData.append("file", file);
-
               try {
-                const res = await fetch("http://127.0.0.1:8000/upload", {
-                  method: "POST",
-                  body: formData,
-                });
-
-                const data = await res.json();
+                const data = await uploadImage(file);
 
                 setRecipe((prev: any) => ({
                   ...prev,
-                  image_url: data.url, // 🔥 URL que devuelve el backend
+                  image_url: data.url,
                 }));
               } catch (err) {
                 console.error(err);

@@ -1,6 +1,6 @@
-const API_URL = "http://127.0.0.1:8000";
-
 import { type Ingredient, type Recipe, type RecipeCost } from "../types/types";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export const getRecipes = async (): Promise<Recipe[]> => {
   const res = await fetch(`${API_URL}/recipes`);
@@ -57,7 +57,7 @@ export const updateRecipe = async (id: number, data: any) => {
   });
   if (!res.ok) {
     const error = await res.json();
-    console.error("ERROR BACK:", error); // 🔥 CLAVE
+    console.error("ERROR BACK:", error);
     throw new Error("Error al actualizar receta");
   }
 
@@ -80,7 +80,6 @@ export const createIngredient = async (data: {
 
   return res.json();
 };
-
 
 export const deleteIngredient = async (id: number) => {
   await fetch(`${API_URL}/ingredients/${id}`, {
@@ -114,7 +113,7 @@ export const uploadImage = async (file: File): Promise<{ url: string }> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch("http://127.0.0.1:8000/upload/", {
+  const res = await fetch(`${API_URL}/upload/`, {
     method: "POST",
     body: formData,
   });

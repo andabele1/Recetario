@@ -1,17 +1,19 @@
+import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from urllib.parse import quote_plus
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-password = quote_plus("aNDABELE*1")
-
-DATABASE_URL = "postgresql+psycopg://postgres:aNDABELE*1@localhost:5432/postgres"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg://postgres:postgres@localhost:5432/postgres",
+)
 
 engine = create_engine(DATABASE_URL)
 
-SessionLocal = sessionmaker(    
+SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
 )
 
 Base = declarative_base()
