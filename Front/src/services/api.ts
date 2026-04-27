@@ -42,6 +42,7 @@ export const deleteRecipe = async (id: number) => {
   }
 };
 
+
 export const getIngredients = async (): Promise<Ingredient[]> => {
   const res = await fetch(`${API_URL}/ingredients/`);
   return res.json();
