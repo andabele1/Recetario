@@ -1,0 +1,216 @@
+.container {
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 40px 80px;
+}
+
+.card {
+  max-width: 1000px;
+  height: 1600px;
+  margin: auto;
+}
+
+.back {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin-bottom: 10px;
+  color: #6b7280;
+}
+
+.image {
+  width: 100%;
+  height: 350px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+}
+
+.header {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.titleInput {
+  font-size: 28px;
+  font-weight: 600;
+  border: none;
+  border-bottom: 2px solid #e5e7eb;
+  outline: none;
+  width: 100%;
+}
+
+.editBtn {
+  border: 1px solid #e5e7eb;
+  background: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.editBtn:hover {
+  background: #f9fafb;
+}
+
+.content {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 40px;
+  height: 600px;
+}
+
+.section {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 16px;
+  height: 1000px;
+}
+
+.section ul {
+  padding-left: 18px;
+}
+
+.section li {
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.instructions {
+  white-space: pre-line;
+  line-height: 1.6;
+  color: #374151;
+  height: 1000px;
+}
+
+.instructionsInput {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  border: none;
+  outline: none;
+  background: transparent;
+  line-height: 1.6;
+  resize: none;
+  overflow: hidden;
+}
+
+/* INGREDIENTES EDIT */
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.row select,
+.row input {
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* PORCIONES */
+.portionBox {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portionBox input {
+  width: 60px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* COSTO */
+.costBox {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+
+.costBox strong {
+  color: #d97706;
+}
+
+.costSection {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.costSection input {
+  width: 90px;
+  padding: 6px;
+}
+
+.costSection button {
+  padding: 6px 12px;
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.costResult {
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.addBtn {
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: none;
+  background: #10b981;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.quantityInput {
+  width: 140px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.shortDescription {
+  margin-top: 15px;
+}
+
+.shortDescriptionInput {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #e5e7eb;
+  outline: none;
+  padding: 6px;
+}
