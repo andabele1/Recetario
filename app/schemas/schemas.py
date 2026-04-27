@@ -1,3 +1,5 @@
+import string
+
 from pydantic import BaseModel
 from typing import List
 
@@ -12,24 +14,51 @@ class RecipeIngredientCreate(BaseModel):
 
 class RecipeCreate(BaseModel):
     name: str
-    description: str
+    description: str | None = None
     servings: int
+    instructions: str
+    image_url: str | None = None
+    short_description: str;
     ingredients: List[RecipeIngredientCreate]
+    
+class RecipeIngredientResponse(BaseModel):
+    ingredient_id: int
+    quantity: float
+
+    class Config:
+        from_attributes = True
+
+
+class RecipeResponse(BaseModel):
+    id: int
+    name: str
+    short_description: str
+    instructions: str
+    image_url: str
+    servings: int
+    ingredients: List[RecipeIngredientResponse]
+
+    class Config:
+        from_attributes = True
 
     
 # ------------------------
 # SCHEMAS PARA INGREDSIENTES
 # ------------------------     
 
-class IngredientCreate(BaseModel):
+from pydantic import BaseModel
+
+class IngredientBase(BaseModel):
     name: str
     base_unit: str
+    available_quantity: float
+    total_cost: float
 
+class IngredientCreate(IngredientBase):
+    pass
 
-class IngredientResponse(BaseModel):
+class IngredientResponse(IngredientBase):
     id: int
-    name: str
-    base_unit: str
 
     class Config:
         from_attributes = True

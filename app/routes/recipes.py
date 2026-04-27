@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os
+import shutil
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.models import Recipe, RecipeIngredient
@@ -33,8 +35,9 @@ def create_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
         # Crear receta
         new_recipe = Recipe(
             name=recipe.name,
-            description=recipe.description,
-            servings=recipe.servings
+            servings=recipe.servings,
+            short_description=recipe.short_description,
+            image_url=recipe.image_url
         )
         db.add(new_recipe)
         db.flush()  # 👈 clave (no commit aún)
@@ -59,9 +62,7 @@ def create_recipe(recipe: RecipeCreate, db: Session = Depends(get_db)):
 
 @router.get("/recipes")
 def get_recipes_full(db: Session = Depends(get_db)):
-    recipes = db.query(Recipe).options(
-        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient)
-    ).all()
+    recipes = db.query(Recipe).all()
 
     result = []
 
@@ -79,46 +80,69 @@ def get_recipes_full(db: Session = Depends(get_db)):
         result.append({
             "id": recipe.id,
             "name": recipe.name,
-            "description": recipe.description,
             "servings": recipe.servings,
+            "short_description": recipe.short_description,
+            "image_url": recipe.image_url,
             "ingredients": ingredients_list
         })
 
     return result
 
-from fastapi import HTTPException
-from sqlalchemy.orm import joinedload
-
 @router.get("/recipes/{recipe_id}")
-def get_recipe_by_id(recipe_id: int, db: Session = Depends(get_db)):
+def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
+    recipe = (
+        db.query(Recipe)
+        .options(
+            joinedload(Recipe.ingredients)
+            .joinedload(RecipeIngredient.ingredient)
+        )
+        .filter(Recipe.id == recipe_id)
+        .first()
+    )
 
-    recipe = db.query(Recipe).options(
-        joinedload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient)
-    ).filter(Recipe.id == recipe_id).first()
-
-    # ❌ Si no existe
     if not recipe:
         raise HTTPException(status_code=404, detail="Receta no encontrada")
 
-    # ✅ Construir respuesta
-    ingredients_list = []
-
-    for ri in recipe.ingredients:
-        ingredients_list.append({
-            "ingredient_id": ri.ingredient_id,
-            "name": ri.ingredient.name,
-            "quantity": float(ri.quantity),
-            "unit": ri.ingredient.base_units
-        })
-
-    return {
-        "id": recipe.id,
-        "name": recipe.name,
-        "description": recipe.description,
-        "servings": recipe.servings,
-        "ingredients": ingredients_list
-    }
+    return recipe
     
+@router.put("/recipes/{recipe_id}")
+def update_recipe(recipe_id: int, data: RecipeCreate, db: Session = Depends(get_db)):
+
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Receta no encontrada")
+
+    # 🚫 validar duplicados
+    ids = [i.ingredient_id for i in data.ingredients]
+    if len(ids) != len(set(ids)):
+        raise HTTPException(status_code=400, detail="Ingredientes duplicados")
+
+    # 🔥 actualizar campos base
+    recipe.name = data.name
+    recipe.short_description = data.short_description
+    recipe.servings = data.servings
+    recipe.instructions = data.instructions
+    recipe.image_url = data.image_url
+
+    # 🔥 borrar ingredientes actuales
+    db.query(RecipeIngredient).filter(
+        RecipeIngredient.recipe_id == recipe_id
+    ).delete()
+
+    # 🔥 insertar nuevos
+    for ing in data.ingredients:
+        new_ing = RecipeIngredient(
+            recipe_id=recipe.id,
+            ingredient_id=ing.ingredient_id,
+            quantity=ing.quantity
+        )
+        db.add(new_ing)
+
+    db.commit()
+    db.refresh(recipe)
+
+    return recipe
 
 @router.get("/recipes/{recipe_id}/cost")
 def calculate_recipe_cost(
@@ -199,3 +223,15 @@ def calculate_recipe_cost(
 
         "ingredients": ingredients_result
     }
+    
+@router.delete("/recipes/{recipe_id}")
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Receta no encontrada")
+
+    db.delete(recipe)
+    db.commit()
+
+    return {"message": "Receta eliminada"}

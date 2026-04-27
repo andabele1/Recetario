@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, Text, Float
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
@@ -8,7 +8,10 @@ class Ingredient(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     base_unit = Column(String, nullable=False)
-    packages = relationship("IngredientPackage", back_populates="ingredient")
+    available_quantity = Column(Float, nullable=False)
+    total_cost = Column(Float, nullable=False)
+    
+    packages = relationship("IngredientPackage", cascade="all, delete")
 
 
 class IngredientPackage(Base):
@@ -19,14 +22,18 @@ class IngredientPackage(Base):
     package_quantity = Column(Numeric, nullable=False)
     package_cost = Column(Numeric, nullable=False)
 
-    ingredient = relationship("Ingredient", back_populates="packages")
+    ingredient = relationship("Ingredient")
+
 
 class Recipe(Base):
     __tablename__ = "recipes"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    description = Column(Text)
+    short_description = Column(Text)
+    instructions = Column(Text)
+    image_url = Column(Text)
+
     servings = Column(Integer, nullable=False)
 
     ingredients = relationship("RecipeIngredient", cascade="all, delete")

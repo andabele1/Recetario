@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
-from app.models.models import Ingredient
-from app.schemas.schemas import IngredientCreate
+from app.models.models import Ingredient, IngredientPackage
+from app.schemas.schemas import IngredientCreate, IngredientResponse
 
 router = APIRouter(prefix="/ingredients", tags=["Ingredients"])
-
 
 def get_db():
     db = SessionLocal()
@@ -14,36 +13,39 @@ def get_db():
     finally:
         db.close()
         
-        
-@router.post("/ingredients")
-def create_ingredient(ingredient: IngredientCreate, db: Session = Depends(get_db)):
-    
-    ingredient.name = ingredient.name.lower().strip()
+@router.post("/")
+@router.post("/", response_model=IngredientResponse)
+def create_ingredient(data: IngredientCreate, db: Session = Depends(get_db)):
 
-    # Validar duplicado por nombre
-    existing = db.query(Ingredient).filter(
-        Ingredient.name == ingredient.name
-    ).first()
-
-    if existing:
-        raise HTTPException(status_code=400, detail="Ingrediente ya existe")
-
-    new_ingredient = Ingredient(
-        name=ingredient.name,
-        base_unit=ingredient.base_unit
+    # 🔥 crear ingrediente
+    ingredient = Ingredient(
+        name=data.name,
+        base_unit=data.base_unit,
+        available_quantity=data.available_quantity,
+        total_cost=data.total_cost
     )
 
-    db.add(new_ingredient)
+    db.add(ingredient)
     db.commit()
-    db.refresh(new_ingredient)
+    db.refresh(ingredient)
 
-    return new_ingredient
+    # 🔥 CREAR PACKAGE AUTOMÁTICO
+    package = IngredientPackage(
+        ingredient_id=ingredient.id,
+        package_quantity=data.available_quantity,
+        package_cost=data.total_cost
+    )
 
-@router.get("/ingredients")
+    db.add(package)
+    db.commit()
+
+    return ingredient
+
+@router.get("/")
 def get_ingredients(db: Session = Depends(get_db)):
     return db.query(Ingredient).all()
 
-@router.get("/ingredients/{ingredient_id}")
+@router.get("/{ingredient_id}")
 def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
 
     ingredient = db.query(Ingredient).filter(
@@ -55,7 +57,7 @@ def get_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
 
     return ingredient
 
-@router.put("/ingredients/{ingredient_id}")
+@router.put("/{ingredient_id}")
 def update_ingredient(
     ingredient_id: int,
     ingredient: IngredientCreate,
@@ -76,17 +78,14 @@ def update_ingredient(
 
     return {"message": "Ingrediente actualizado"}
 
-@router.delete("/ingredients/{ingredient_id}")
+@router.delete("/{ingredient_id}")
 def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
+    ing = db.query(Ingredient).filter(Ingredient.id == ingredient_id).first()
 
-    ingredient = db.query(Ingredient).filter(
-        Ingredient.id == ingredient_id
-    ).first()
+    if not ing:
+        raise HTTPException(status_code=404, detail="No existe")
 
-    if not ingredient:
-        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
-
-    db.delete(ingredient)
+    db.delete(ing)
     db.commit()
 
-    return {"message": "Ingrediente eliminado"}
+    return {"message": "Eliminado"}
