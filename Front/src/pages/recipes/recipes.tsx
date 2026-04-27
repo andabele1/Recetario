@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import RecipeCard from "../../components/RecipeCard/RecipeCard";
 import { deleteRecipe, getRecipes } from "../../services/api";
 import { type Recipe } from "../../types/types";
-import "./Recipes.css";
+import "./recipes.css";
 
 export default function Recipes() {
   const navigate = useNavigate();
