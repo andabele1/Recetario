@@ -12,15 +12,12 @@ cors_origins = [
     origin.strip()
     for origin in os.getenv(
         "BACKEND_CORS_ORIGINS",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://recetario-app.onrender.com",
-        "https://recetario-cyan.vercel.app",
-        "https://recetario-app.onrender.com/ingredients/"
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "https://recetario-cyan.vercel.app"
     ).split(",")
     if origin.strip()
 ]
-
 app = FastAPI()
 
 app.add_middleware(
