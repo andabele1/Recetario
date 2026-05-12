@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, UploadFile
 router = APIRouter(prefix="/upload")
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8000", "https://recetario-wa6k.vercel.app")
+APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8000")
 
 
 @router.post("/")
@@ -19,3 +19,4 @@ def upload_image(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     return {"url": f"{APP_BASE_URL}/uploads/{file.filename}"}
+
