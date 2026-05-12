@@ -34,6 +34,7 @@ app.include_router(recipes.router)
 app.include_router(ingredients.router)
 app.include_router(upload.router)
 
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 if __name__ == "__main__":
