@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, Text, Float
 from sqlalchemy.orm import relationship
-from app.db.database import Base
+from db.database import Base
 
 class Ingredient(Base):
     __tablename__ = "ingredients"

@@ -3,9 +3,10 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+import uvicorn
 
-from app.db.database import Base, engine
-from app.routes import ingredients, recipes, upload
+from db.database import Base, engine
+from routes import ingredients, recipes, upload
 
 cors_origins = [
     origin.strip()
@@ -34,3 +35,10 @@ app.include_router(ingredients.router)
 app.include_router(upload.router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+if __name__ == "__main__":
+    # Lee el puerto de Render, si no existe usa el 8000
+    port = int(os.environ.get("PORT", 8000))
+    # Corre uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)     
+    

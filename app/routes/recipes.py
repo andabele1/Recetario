@@ -1,13 +1,14 @@
 import os
+from pprint import pp
 import shutil
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.models.models import Recipe, RecipeIngredient
-from app.schemas.schemas import RecipeCreate
+from db.database import SessionLocal
+from models.models import Recipe, RecipeIngredient
+from schemas.schemas import RecipeCreate
 from sqlalchemy.orm import joinedload
 from math import ceil
-from app.models.models import Ingredient
+from models.models import Ingredient
 
 router = APIRouter()
 

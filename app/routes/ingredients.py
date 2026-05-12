@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.models.models import Ingredient, IngredientPackage
-from app.schemas.schemas import IngredientCreate, IngredientResponse
+from db.database import SessionLocal
+from models.models import Ingredient, IngredientPackage
+from schemas.schemas import IngredientCreate, IngredientResponse
 
 router = APIRouter(prefix="/ingredients", tags=["Ingredients"])
 
