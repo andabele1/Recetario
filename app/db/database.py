@@ -8,6 +8,7 @@ DATABASE_URL = os.getenv(
     "postgresql://yo:8jPBUgQ3sHo3tJSgXKLKEYtOkCuEJhCd@dpg-d81lkgho3t8c739edpbg-a/recetario_1ijf"
 )
 
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(
